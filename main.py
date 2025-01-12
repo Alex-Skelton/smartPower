@@ -277,6 +277,7 @@ def get_agile_data(octopus, time_offsets):
     """
     Request Agile data from Octopus, add to dataframe and do some basic analysis
     """
+    # account_data = octopus.get_account_data()
     agile_data = octopus.get_tariff_data()
     df = pd.DataFrame(agile_data["results"])
 
