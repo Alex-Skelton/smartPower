@@ -3,7 +3,7 @@ FROM public.ecr.aws/lambda/python:3.11
 # Copy requirements.txt
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
-# Copy function code
+# Copy function codemut
 COPY . . ${LAMBDA_TASK_ROOT}
 
 # Install the specified packages

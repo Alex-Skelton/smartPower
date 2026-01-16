@@ -28,7 +28,8 @@ def handler(event, context):
         logger.info("event command: Calculate")
         charge_times, df_energy_insights = calculate_charge_windows(offline_debug, aws_fields, cloudwatch)
         logger.info(f"Calculated charge windows: {charge_times}")
-        send_email(offline_debug, charge_times)
+        if charge_times is not None:
+            send_email(offline_debug, charge_times)
 
         return charge_times
     elif msg == 'update':

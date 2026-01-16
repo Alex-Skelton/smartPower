@@ -78,6 +78,13 @@ def analyse_energy_usage(giv_energy, weeks, time_offsets):
     """
     previous_dates = get_x_weeks_previous_weekday_dates(weeks)
     data = get_energy_usage_days(giv_energy, previous_dates, [0, 3, 5])
+    #ERROR: request data over 2 days. Say Friday and Saturday. For some reason the data on Friday night from 00:00 to 00:30 is missing on some days
+    # how to handle this?
+    # check size of data, if not complete data set, stop execution with log message
+
+    # this seems to be something to do with GivEnergy. The calling API is depreceated. Update API, call for site rather than inverter and find solution around missing time slots which can easily happen..
+
+
     all_days, times = extract_half_hour_data(data)
     df = add_to_df(all_days, times, time_offsets)
     df = df.rename(columns={'avg': 'avg_consumption_kwh'})
@@ -220,12 +227,13 @@ def extract_half_hour_data(data):
     convert first day times into date times
     """
     all_days = []
+    times = []
     for day in data:
         day.popitem()
         day_total = []
-        times = []
         for half_hour in day.values():
-            times.append((datetime.strptime(half_hour["start_time"], '%Y-%m-%d %H:%M')).time())
+            if len(day) == 95 and len(times) < 95:
+                times.append((datetime.strptime(half_hour["start_time"], '%Y-%m-%d %H:%M')).time())
             day_total.append(sum(half_hour["data"].values()))
         all_days.append(day_total)
     return all_days, times
@@ -501,6 +509,8 @@ def determine_optimal_charging_periods(df_energy_insights: pd.DataFrame, battery
     # Calculate the overall energy requirement
     overall_energy_requirement = round(df_energy_insights['energy'].sum() +
                                        (battery_max_capacity - battery_remaining_capacity), 2)
+
+    overall_energy_requirement = 0 if overall_energy_requirement < 0 else overall_energy_requirement
 
     # Calculate the number of hours needed to charge the battery, rounding up whole number
     slots_to_charge = math.ceil((overall_energy_requirement / battery_charge_rate_hourly) * 2)
